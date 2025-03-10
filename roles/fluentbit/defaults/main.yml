@@ -1,0 +1,6 @@
+fluent-bit_user: fluent-bit
+fluent-bit_group: fluent-bit
+fluent-bit_dir: "/etc/fluent-bit"
+fluent-bit_data_dir: "/var/log/fluent-bit"
+fluent-bit_apt_url: "https://packages.fluentbit.io/fluentbit.key"
+ansible_distribution_release: "noble/fluent-bit_3.2.6_amd64.deb"

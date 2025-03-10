@@ -1,0 +1,16 @@
+[Unit]
+Description=Elasticsearch
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=elasticsearch
+Group=elasticsearch
+ExecStart=/usr/share/elasticsearch/bin/elasticsearch
+Restart=always
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target

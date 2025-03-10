@@ -1,0 +1,65 @@
+- name: Create FluentBit group
+  group:
+    name: "{{ fluent-bit_group }}"
+    state: present
+
+- name: Create FluentBit user
+  user:
+    name: "{{ fluent-bit_user }}"
+    group: "{{ fluent-bit_group }}"
+    shell: /usr/sbin/nologin
+    create_home: no
+
+- name: Create required directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ fluent-bit_user }}"
+    group: "{{ fluent-bit_group }}"
+    mode: "0755"
+  loop:
+    - "{{ fluent-bit_dir }}"
+    - "{{ fluent-bit_data_dir }}"
+
+- name: Add FluentBit APT repository key
+  ansible.builtin.apt_key:
+    url: "{{ fluent-bit_apt_url }}"
+    state: present
+
+- name: Add FluentBit APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} main"
+    state: present
+    filename: fluent-bit
+
+- name: Install FluentBit
+  ansible.builtin.apt:
+    name: fluent-bit
+    state: present
+  notify: Restart fluent-bit
+
+- name: Deploy systemd service for FluentBit
+  template:
+    src: "fluent-bit.service.j2"
+    dest: "/etc/systemd/system/fluent-bit.service"
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Deploy FluentBit parsers configuration
+  template:
+    src: "parsers.conf.j2"
+    dest: "/etc/fluent-bit/parsers.conf"
+    mode: "0644"
+
+- name: Deploy FluentBit configuration
+  template:
+    src: "fluent-bit.conf.j2"
+    dest: "/etc/fluent-bit/fluent-bit.conf"
+    mode: "0644"
+  notify: Restart fluent-bit
+
+- name: Enable and start FluentBit
+  systemd:
+    name: fluent-bit
+    state: started
+    enabled: yes

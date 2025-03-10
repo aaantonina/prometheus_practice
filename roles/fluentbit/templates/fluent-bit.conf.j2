@@ -1,0 +1,20 @@
+[SERVICE]
+    Flush         5
+    Log_Level     info
+    Parsers_File  /etc/fluent-bit/parsers.conf
+
+[INPUT]
+    Name          systemd
+    Tag           host.*
+    Systemd_Filter  _SYSTEMD_UNIT=ssh.service
+    Systemd_Filter  _SYSTEMD_UNIT=fluent-bit.service
+
+[OUTPUT]
+    Name          es
+    Match         host.*
+    Host          {{ elasticsearch_host }}
+    Port          9200
+    Index         fluentbit
+    Type          _doc
+    Logstash_Format On
+    Replace_Dots  On

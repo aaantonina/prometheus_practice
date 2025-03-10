@@ -1,0 +1,14 @@
+[Unit]
+Description=Fluent Bit
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fluent-bit -c /etc/fluent-bit/fluentbit.conf
+Restart=always
+User=fluentbit
+Group=fluentbit
+
+[Install]
+WantedBy=multi-user.target

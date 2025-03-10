@@ -1,0 +1,15 @@
+---
+- name: Prometheus monitoring server installation on local machine
+  hosts: all
+  become: true
+  pre_tasks:
+    - name: Install dependencies
+      ansible.builtin.apt:
+        name: [  "tar", "unzip" ]
+        state: present
+      become: true
+  roles:
+    - prometheus
+    - node_exporter
+    - fluent-bit
+    - elastic_kibana

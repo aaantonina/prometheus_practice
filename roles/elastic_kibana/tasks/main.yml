@@ -1,0 +1,92 @@
+- name: Create ElasticSearch and Kibana groups
+  group:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ elasticsearch_group }}"
+    - "{{ kibana_group }}"
+
+- name: Create ElasticSearch and Kibana users
+  user:
+    name: "{{ item }}"
+    group: "{{ item }}"
+    shell: /usr/sbin/nologin
+    create_home: no
+  loop:
+    - "{{ elasticsearch_user }}"
+    - "{{ kibana_user }}"
+
+- name: Create required directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "0755"
+  loop:
+    - { path: "{{ elastic_home }}", owner: "{{ elasticsearch_user }}", group: "{{ elasticsearch_group }}" }
+    - { path: "{{ elasticsearch_data_dir }}", owner: "{{ elasticsearch_user }}", group: "{{ elasticsearch_group }}" }
+    - { path: "{{ kibana_home }}", owner: "{{ kibana_user }}", group: "{{ kibana_group }}" }
+    - { path: "{{ kibana_data_dir }}", owner: "{{ kibana_user }}", group: "{{ kibana_group }}" }
+
+- name: Download Elasticsearch archive
+  ansible.builtin.get_url:
+    url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
+    dest: "/tmp/elasticsearch.tar.gz"
+    mode: '0644'
+
+- name: Extract Elasticsearch
+  ansible.builtin.unarchive:
+    src: "/tmp/elasticsearch.tar.gz"
+    dest: "{{ elastic_home }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  become: true
+
+- name: Apply Elasticsearch config
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
+    dest: "{{ elastic_home }}/config/elasticsearch.yml"
+    mode: "0644"
+
+- name: Deploy systemd service for Elasticsearch
+  template:
+    src: "elasticsearch.service.j2"
+    dest: "/etc/systemd/system/elasticsearch.service"
+    mode: "0644"
+  notify: Restart elastic
+
+- name: Download Kibana archive
+  ansible.builtin.get_url:
+    url: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
+    dest: "/tmp/kibana.tar.gz"
+    mode: '0644'
+
+- name: Extract Kibana
+  ansible.builtin.unarchive:
+    src: "/tmp/kibana.tar.gz"
+    dest: "{{ kibana_home }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  become: true
+
+- name: Apply Kibana config
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: "{{ kibana_home }}/config/kibana.yml"
+    mode: "0644"
+
+- name: Deploy systemd service for Kibana
+  template:
+    src: "kibana.service.j2"
+    dest: "/etc/systemd/system/kibana.service"
+    mode: "0644"
+  notify: Restart kibana
+
+- name: Enable elasticsearch and kibana
+  systemd:
+    name: "{{ item }}"
+    state: started
+  loop:
+    - elasticsearch
+    - kibana

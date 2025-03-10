@@ -1,0 +1,8 @@
+prometheus_version: "2.51.2"
+prometheus_user: "prometheus"
+prometheus_group: "prometheus"
+prometheus_dir: "/etc/prometheus"
+prometheus_data_dir: "/var/lib/prometheus"
+prometheus_config_file: "/etc/prometheus/prometheus.yml"
+prometheus_web_address: "localhost:9090"
+prometheus_bin_dir: "/usr/local/bin"
