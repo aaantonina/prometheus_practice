@@ -12,7 +12,7 @@
 
 - name: Create required directories
   file:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ fluent-bit_user }}"
     group: "{{ fluent-bit_group }}"
@@ -37,13 +37,6 @@
     name: fluent-bit
     state: present
   notify: Restart fluent-bit
-
-- name: Deploy systemd service for FluentBit
-  template:
-    src: "fluent-bit.service.j2"
-    dest: "/etc/systemd/system/fluent-bit.service"
-    mode: "0644"
-  notify: Reload systemd
 
 - name: Deploy FluentBit parsers configuration
   template:

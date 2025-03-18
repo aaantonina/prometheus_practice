@@ -62,7 +62,10 @@ ansible/
 
 Запустите плейбук с командой:
 
-ansible-playbook site.yml
+```sh
+  ansible-playbook -i hosts.ini playbook.yml --ask-become-pass
+```
+Введите пароль sudo пользователя
 
 ### Параметры по умолчанию
 

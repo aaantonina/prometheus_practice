@@ -2,6 +2,7 @@
 - name: Prometheus monitoring server installation on local machine
   hosts: all
   become: true
+  become_method: sudo
   pre_tasks:
     - name: Install dependencies
       ansible.builtin.apt:
@@ -11,5 +12,5 @@
   roles:
     - prometheus
     - node_exporter
-    - fluent-bit
+    - fluentbit
     - elastic_kibana
